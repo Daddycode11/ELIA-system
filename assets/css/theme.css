@@ -1,0 +1,18 @@
+
+  :root{
+    --navy:#0F2C52;
+    --navy-deep:#0A2040;
+    --gold:#C99A2E;
+    --sky:#3E7CB1;
+    --steel:#8F98A3;
+    --bg:#F6F5F1;
+    --ink:#1A1F26;
+  }
+  body{
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+  }
+  h1,h2,h3,.display-serif{
+    font-family:'Source Serif 4',serif;
+  }

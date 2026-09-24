@@ -1,0 +1,21 @@
+.site-header { min-height: 78px; background: var(--navy-deep); }
+.brand-accent { color: var(--gold); }
+.brand-caption { display: block; font-size: .72rem; font-weight: 400; letter-spacing: .03em; }
+.app-layout { display: flex; min-height: calc(100vh - 78px); }
+.sidebar { width: 248px; flex-shrink: 0; background: #fff !important; border-right: 1px solid #dce3eb; }
+.sidebar .offcanvas-body { min-height: 100%; overflow-wrap: anywhere; }
+.main-content { width: 100%; min-width: 0; }
+.eyebrow { color: #5d6b79; font-size: .75rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+.dashboard-link { color: var(--navy-deep); background: #e9eff6; font-weight: 600; }
+.dashboard-link:hover { background: #dbe5ef; color: #10283c; }
+.btn-primary { --bs-btn-bg: #0A2040; --bs-btn-border-color: #0A2040; --bs-btn-hover-bg: #102a41; --bs-btn-hover-border-color: #102a41; --bs-btn-active-bg: #102a41; }
+.form-control:focus { border-color: #547c9f; box-shadow: 0 0 0 .2rem #0A204026; }
+.login-panel { max-width: 460px; margin-top: clamp(1rem, 7vh, 5rem); }
+.guest-layout .page-footer { text-align: center; }
+.page-footer { border-top: 1px solid #dce3eb; line-height: 1.6; }
+.skip-link { position: absolute; z-index: 2000; background: white; padding: .75rem; }
+.preserve-lines { white-space: pre-wrap; overflow-wrap: anywhere; }
+.document-action { min-width: 220px; max-width: 320px; }
+.table td { overflow-wrap: anywhere; }
+.request-timeline { border-left: 3px solid var(--gold); padding-left: 1.5rem; margin-left: .5rem; list-style: none; }
+@media (min-width: 992px) { .sidebar .offcanvas-body { min-height: calc(100vh - 78px); } }

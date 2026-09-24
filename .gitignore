@@ -1,0 +1,24 @@
+# Local configuration / secrets
+config/local.php
+.env
+.env.*
+
+# User uploads
+uploads/*
+!uploads/.gitkeep
+
+# Dependencies
+vendor/
+
+# IDE / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs / temp
+*.log
+tmp/
+temp/
+
+# Development-only admin creator
+create_admin.php
