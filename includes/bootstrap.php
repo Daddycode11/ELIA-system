@@ -74,6 +74,38 @@ if (!function_exists('database')) {
     }
 }
 
+/* ---------- Session teardown (used by actions/logout.php) ---------- */
+
+/**
+ * Ends the current session completely: clears the data, removes the cookie
+ * and destroys the server-side session. A fresh empty session is started
+ * afterwards, so flash('success', 'You have signed out.') still works.
+ */
+function destroy_session(): void
+{
+    $_SESSION = [];
+
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', [
+            'expires'  => time() - 42000,
+            'path'     => $params['path'],
+            'domain'   => $params['domain'],
+            'secure'   => $params['secure'],
+            'httponly' => $params['httponly'],
+            'samesite' => $params['samesite'] ?: 'Lax',
+        ]);
+    }
+
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_destroy();
+    }
+
+    session_start();
+    session_regenerate_id(true);
+    $_SESSION = [];
+}
+
 /* ---------- Authentication ---------- */
 
 // current_user(), require_guest(), require_role(), attempt_login(), dashboard_path()

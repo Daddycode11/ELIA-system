@@ -17,7 +17,7 @@ return array_replace([
     'support_phone' => '(043) 457-0231',
 
     // Routing
-    'base_path' => '/elia-system',
+    'base_path' => '',
 
     // Database
     'db_host' => getenv('ELIA_DB_HOST') ?: '127.0.0.1',
