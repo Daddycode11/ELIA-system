@@ -1,0 +1,266 @@
+/* Login page. Loaded AFTER landing.css, so the navbar, footer, .btn-gold,
+   .eyebrow, .section-label and .divider-gold are shared with the landing page.
+
+   Replace the three variables below with the real colours from landing.css
+   so both pages match exactly. */
+:root {
+  --login-bg-from: rgba(13, 59, 46, .93);
+  --login-bg-to: rgba(18, 82, 63, .88);
+  --login-accent: #c9a227;
+}
+
+.login-stage {
+  padding: 4rem 0 5rem;
+  color: #fff;
+  min-height: calc(100vh - 220px);
+  display: flex;
+  align-items: center;
+  /* Green overlay on top of the campus photo (assets/img/omsc-building.jpg). */
+  background:
+    linear-gradient(135deg, var(--login-bg-from), var(--login-bg-to)),
+    url("../img/omsc-building.jpg") center / cover no-repeat;
+}
+
+/* Left column */
+.login-logo {
+  width: 96px;
+  height: auto;
+  margin-bottom: 1.25rem;
+}
+
+.login-intro h1 {
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  line-height: 1.15;
+}
+
+.login-intro .lead {
+  color: rgba(255, 255, 255, .88);
+  max-width: 34rem;
+}
+
+.login-points li {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .4rem 0;
+  color: rgba(255, 255, 255, .92);
+}
+
+.login-dot {
+  flex: 0 0 auto;
+  width: .6rem;
+  height: .6rem;
+  border-radius: 50%;
+  background: var(--login-accent);
+}
+
+/* Card */
+.login-card {
+  background: #fff;
+  color: #212529;
+  border-radius: .75rem;
+  border-top: 4px solid var(--login-accent);
+  padding: 2rem 1.75rem;
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, .3);
+}
+
+.login-title {
+  font-size: 1.6rem;
+}
+
+.login-card .form-label {
+  font-weight: 600;
+}
+
+.login-card .form-control:focus {
+  border-color: var(--login-accent);
+  box-shadow: 0 0 0 .25rem rgba(201, 162, 39, .25);
+}
+
+.login-toggle {
+  min-width: 5rem;
+  border: 1px solid #ced4da;
+  background: #f8f9fa;
+  color: #495057;
+  font-size: .95rem;
+}
+
+.login-toggle:hover,
+.login-toggle:focus-visible {
+  background: #e9ecef;
+  color: #212529;
+}
+
+.login-alert {
+  font-size: .95rem;
+}
+
+.login-rule {
+  margin: 1.5rem 0 1rem;
+  opacity: .15;
+}
+
+.login-note {
+  font-size: .925rem;
+  color: #5c636a;
+}
+
+.login-note a {
+  font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+  .login-stage {
+    padding: 2.5rem 0 3rem;
+    min-height: 0;
+  }
+  .login-intro {
+    text-align: center;
+  }
+  .login-intro .lead {
+    margin-inline: auto;
+  }
+  .login-points {
+    display: inline-block;
+    text-align: left;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .login-card {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
+/* Login / register pages. Loaded AFTER landing.css, so the navbar, footer,
+   .btn-gold, .eyebrow, .section-label and .divider-gold are shared with the
+   landing page. Colours use the site theme (--navy-deep, --gold) with the
+   values from app.css as fallbacks. */
+:root {
+  --login-bg-from: rgba(10, 32, 64, .94);
+  --login-bg-to: rgba(16, 42, 65, .90);
+  --login-accent: var(--gold, #c9a227);
+}
+
+.login-stage {
+  padding: 4rem 0 5rem;
+  color: #fff;
+  min-height: calc(100vh - 220px);
+  display: flex;
+  align-items: center;
+  /* Navy overlay on top of the campus photo (assets/img/omsc-building.jpg). */
+  background:
+    linear-gradient(135deg, var(--login-bg-from), var(--login-bg-to)),
+    url("../img/omsc-building.jpg") center / cover no-repeat;
+}
+
+/* Left column */
+.login-logo {
+  width: 96px;
+  height: auto;
+  margin-bottom: 1.25rem;
+}
+
+.login-intro h1 {
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  line-height: 1.15;
+}
+
+.login-intro .lead {
+  color: rgba(255, 255, 255, .88);
+  max-width: 34rem;
+}
+
+.login-points li {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .4rem 0;
+  color: rgba(255, 255, 255, .92);
+}
+
+.login-dot {
+  flex: 0 0 auto;
+  width: .6rem;
+  height: .6rem;
+  border-radius: 50%;
+  background: var(--login-accent);
+}
+
+/* Card */
+.login-card {
+  background: #fff;
+  color: #212529;
+  border-radius: .75rem;
+  border-top: 4px solid var(--login-accent);
+  padding: 2rem 1.75rem;
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, .3);
+}
+
+.login-title {
+  font-size: 1.6rem;
+}
+
+.login-card .form-label {
+  font-weight: 600;
+}
+
+.login-card .form-control:focus {
+  border-color: var(--login-accent);
+  box-shadow: 0 0 0 .25rem rgba(201, 162, 39, .25);
+}
+
+.login-toggle {
+  min-width: 5rem;
+  border: 1px solid #ced4da;
+  background: #f8f9fa;
+  color: #495057;
+  font-size: .95rem;
+}
+
+.login-toggle:hover,
+.login-toggle:focus-visible {
+  background: #e9ecef;
+  color: #212529;
+}
+
+.login-alert {
+  font-size: .95rem;
+}
+
+.login-rule {
+  margin: 1.5rem 0 1rem;
+  opacity: .15;
+}
+
+.login-note {
+  font-size: .925rem;
+  color: #5c636a;
+}
+
+.login-note a {
+  font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+  .login-stage {
+    padding: 2.5rem 0 3rem;
+    min-height: 0;
+  }
+  .login-intro {
+    text-align: center;
+  }
+  .login-intro .lead {
+    margin-inline: auto;
+  }
+  .login-points {
+    display: inline-block;
+    text-align: left;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .login-card {
+    padding: 1.5rem 1.25rem;
+  }
+}

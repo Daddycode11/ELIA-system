@@ -1,0 +1,47 @@
+/* Dashboard additions. Loaded AFTER app.css.
+   Every colour has a fallback, so the header stays readable even if the
+   --navy-deep / --gold variables are not loaded on the page. */
+
+.site-header {
+  background: var(--navy-deep, #0A2040);
+  box-shadow: inset 0 -3px 0 var(--gold, #c9a227);
+  color: #fff;
+}
+
+.site-header .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  color: #fff;
+  line-height: 1.15;
+}
+
+.site-header .brand-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.site-header .brand-accent {
+  color: var(--gold, #c9a227);
+}
+
+.site-header .brand-caption {
+  opacity: .85;
+}
+
+.site-header .header-user {
+  color: #fff;
+  min-width: 0;
+}
+
+.site-header .user-name {
+  max-width: 20rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-footer a {
+  color: inherit;
+}

@@ -17,7 +17,7 @@ $site = app_config();
 
 <nav class="navbar navbar-expand-xl py-3" data-bs-theme="dark" aria-label="Main navigation">
   <div class="container">
-    <a class="navbar-brand fw-semibold" href="#">
+    <a class="navbar-brand fw-semibold" href="<?= escape(url('/')) ?>">
       <?= escape($site['site_name']) ?> <span class="brand-campus">| OMSU</span>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,7 @@ $site = app_config();
           records — built for <?= escape($site['campus']) ?>.
         </p>
         <div class="d-flex flex-wrap gap-3">
-          <a href="<?= escape(url('register.php')) ?>" class="btn btn-gold btn-lg px-4">Get Started</a>
+          <a href="<?= escape(url('client/register.php')) ?>" class="btn btn-gold btn-lg px-4">Get Started</a>
           <a href="#about" class="btn btn-outline-light-custom btn-lg px-4">Learn More</a>
         </div>
       </div>
@@ -283,15 +283,15 @@ $site = app_config();
       <div class="col-md-4">
         <h2 class="footer-heading">Contact</h2>
         <ul class="list-unstyled footer-list">
-          <li class="mb-2"><a href="mailto:elia@omsc.edu.ph">elia@omsc.edu.ph</a></li>
-          <li class="mb-2"><a href="tel:+63434570231">(043) 457-0231</a></li>
+          <li class="mb-2"><a href="mailto:<?= escape($site['support_email']) ?>"><?= escape($site['support_email']) ?></a></li>
+          <li class="mb-2"><a href="tel:+63434570231"><?= escape($site['support_phone']) ?></a></li>
           <li class="mb-2"><a href="https://omsc.edu.ph">omsc.edu.ph</a></li>
         </ul>
       </div>
     </div>
     <hr class="footer-divider">
     <div class="footer-copyright">
-      &copy; <?= date('Y') ?> External Linkages and International Affairs Office — Occidental Mindoro State College.
+      &copy; <?= date('Y') ?> <?= escape($site['office_name']) ?> Office — Occidental Mindoro State College.
     </div>
   </div>
 </footer>
