@@ -45,7 +45,7 @@ unset($_SESSION['login_email']);
         <li class="nav-item"><a class="nav-link" href="<?= escape(url('/')) ?>">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= escape(url('/#about')) ?>">About</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= escape(url('/#process')) ?>">How It Works</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= escape(url('client/register.php')) ?>">Register</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= escape(url('register.php')) ?>">Register</a></li>
       </ul>
     </div>
   </div>
