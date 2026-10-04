@@ -6,6 +6,7 @@ config/local.php
 # User uploads
 uploads/*
 !uploads/.gitkeep
+!uploads/.htaccess
 
 # Dependencies
 /vendor/

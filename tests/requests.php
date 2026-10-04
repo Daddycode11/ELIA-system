@@ -18,29 +18,7 @@ $zip = new ZipArchive(); $zip->open($docx, ZipArchive::CREATE);
 $zip->addFromString('[Content_Types].xml', '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
 $zip->addFromString('word/document.xml', '<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p/></w:body></w:document>'); $zip->close();
 
-function row(int $id): array
-{
-    $statement = database()->prepare('SELECT * FROM requests WHERE id=:id'); $statement->execute(['id'=>$id]); return $statement->fetch();
-}
-function details(CurlHandle $browser, string $role, int $id): array
-{
-    $response = request($browser, "$role/requests/view.php?id=$id");
-    if ($response['status'] !== 200) { throw new RuntimeException('Details page unavailable: ' . $response['status']); }
-    return $response;
-}
-function action(CurlHandle $browser, string $role, int $id, string $path, array $fields): array
-{
-    $page = details($browser, $role, $id);
-    return request($browser, 'actions/requests/' . $path, $fields + ['id'=>$id, 'revision'=>row($id)['revision'], 'csrf_token'=>token($page)]);
-}
-function state(CurlHandle $browser, string $role, int $id, string $next, string $remarks = ''): array
-{
-    return action($browser, $role, $id, 'status.php', ['status'=>$next,'remarks'=>$remarks]);
-}
-function upload(CurlHandle $browser, int $id, int $requirement, string $path, string $name = 'document.pdf'): array
-{
-    return action($browser, 'client', $id, 'upload.php', ['requirement_id'=>$requirement,'document'=>new CURLFile($path, 'application/octet-stream', $name)]);
-}
+require __DIR__ . '/request-helpers.php';
 
 try {
     foreach (['admin','a','b'] as $key) {
@@ -124,13 +102,17 @@ try {
     check(request_requirements($id)[0]['document_status']==='verified','Admin verifies latest document individually');
     state($admin,'admin',$id,'approved','Approved for the stated activity.'); check(row($id)['status']==='approved' && row($id)['approved_at']!==null,'Admin approves reviewed request');
     state($client,'client',$id,'cancelled','Not allowed now'); check(row($id)['status']==='approved','Cancellation is blocked after approval');
-    state($admin,'admin',$id,'in_progress'); state($admin,'admin',$id,'post_travel'); state($admin,'admin',$id,'completed','All monitoring complete.');
+    $statement=$pdo->prepare('UPDATE request_types SET pre_departure_ready=1,post_travel_ready=1 WHERE id=:id'); $statement->execute(['id'=>$types[0]]);
+    action($admin,'admin',$id,'monitoring.php',['stage'=>'pre_departure','due_date'=>'','remarks'=>'Intentionally empty test checklist.']);
+    state($admin,'admin',$id,'in_progress'); state($admin,'admin',$id,'post_travel');
+    action($admin,'admin',$id,'monitoring.php',['stage'=>'post_travel','due_date'=>'','remarks'=>'Intentionally empty test checklist.']);
+    state($admin,'admin',$id,'completed','All monitoring complete.');
     check(row($id)['status']==='completed' && row($id)['completed_at']!==null,'Request progresses through post-travel to completion');
-    $history=request_history($id);
+    $history=array_filter(request_history($id), fn ($event) => $event['old_status'] !== $event['new_status']);
     check(array_column($history,'new_status')===['draft','submitted','under_review','for_revision','resubmitted','under_review','approved','in_progress','post_travel','completed'],'Complete ordered status history retained');
     check(row($id)['reference_no']===$reference,'Reference stays stable across revisions');
     $statement=$pdo->prepare('SELECT COUNT(*) FROM notifications WHERE request_id=:id AND user_id=:user'); $statement->execute(['id'=>$id,'user'=>$accounts['a']]);
-    check((int)$statement->fetchColumn()===9,'Client notifications created for workflow changes');
+    check((int)$statement->fetchColumn()===11,'Client notifications created for workflow and monitoring changes');
     check(unread_notifications($accounts['admin'])>=2,'Admin notified of submissions and resubmissions');
     check(str_contains(request($client,'notifications.php')['body'],$reference),'Client can read notification list');
     $statement=$pdo->prepare('SELECT id FROM notifications WHERE request_id=:id AND user_id=:user LIMIT 1'); $statement->execute(['id'=>$id,'user'=>$accounts['a']]); $notificationId=$statement->fetchColumn();

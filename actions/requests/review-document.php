@@ -7,6 +7,6 @@ require __DIR__ . '/../../includes/requests/workflow.php';
 $id = request_id(post_string('id'));
 try {
     review_request_document($user, $id, request_id(post_string('document_id')), post_string('status'), post_string('remarks'), (int) post_string('revision'));
-    flash('success', 'Document review saved. Use the request actions to notify the client and return the request for revision when needed.');
+    flash('success', 'Document review saved. Monitoring decisions notify the client immediately. For submission documents, use Request revision to return the request for corrections.');
 } catch (DomainException $exception) { flash('danger', $exception->getMessage()); }
 redirect('admin/requests/view.php?id=' . $id);

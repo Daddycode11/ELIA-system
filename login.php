@@ -109,6 +109,7 @@ unset($_SESSION['login_email']);
 
             <button type="submit" class="btn btn-gold btn-lg w-100">Sign In</button>
           </form>
+          <p class="mt-3 mb-0 login-note"><a href="<?= escape(url('forgot-password.php')) ?>">Forgot your password?</a></p>
 
           <hr class="login-rule">
           <p class="mb-2 login-note">

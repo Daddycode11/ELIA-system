@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-function registration_errors(string $name, string $email, string $password, string $confirmation): array
+function account_identity_errors(string $name, string $email): array
 {
     $errors = [];
     if ($name === '' || !mb_check_encoding($name, 'UTF-8') || mb_strlen($name) > 150 || preg_match('/[\x00-\x1F\x7F]/u', $name)) {
@@ -10,6 +10,17 @@ function registration_errors(string $name, string $email, string $password, stri
     if (strlen($email) > 254 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Enter a valid email address.';
     }
+    return $errors;
+}
+
+function registration_errors(string $name, string $email, string $password, string $confirmation): array
+{
+    return array_merge(account_identity_errors($name, $email), password_errors($password, $confirmation));
+}
+
+function password_errors(string $password, string $confirmation): array
+{
+    $errors = [];
     if (strlen($password) < 12 || strlen($password) > 72 || str_contains($password, "\0")) {
         $errors[] = 'Use a password of 12–72 bytes (at least 12 characters for plain English text).';
     }

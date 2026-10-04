@@ -4,6 +4,13 @@ require_once __DIR__ . '/repository.php';
 require_once __DIR__ . '/validation.php';
 require_once __DIR__ . '/documents.php';
 require_once __DIR__ . '/../notifications.php';
+require_once __DIR__ . '/monitoring.php';
+
+function snapshot_request_requirements(int $id, int $typeId, string $stage): void
+{
+    $statement = database()->prepare("INSERT INTO request_requirements (request_id, requirement_template_id, requirement_name, description, is_required, sort_order, stage) SELECT :request, id, requirement_name, description, is_required, sort_order, stage FROM requirement_templates WHERE request_type_id=:type AND stage=:stage AND status='active' ORDER BY sort_order, id");
+    $statement->execute(['request' => $id, 'type' => $typeId, 'stage' => $stage]);
+}
 
 function request_transitions(string $role, string $status): array
 {
@@ -50,8 +57,7 @@ function save_request(array $user, ?int $id, int $typeId, array $fields, int $re
             $statement = $pdo->prepare('INSERT INTO requests (user_id, request_type_id, title, purpose, destination, country, start_date, end_date) VALUES (:owner, :type, :title, :purpose, :destination, :country, :start_date, :end_date)');
             $statement->execute($fields + ['owner' => $user['id'], 'type' => $typeId]);
             $id = (int) $pdo->lastInsertId();
-            $statement = $pdo->prepare("INSERT INTO request_requirements (request_id, requirement_template_id, requirement_name, description, is_required, sort_order) SELECT :request, id, requirement_name, description, is_required, sort_order FROM requirement_templates WHERE request_type_id=:type AND status='active' ORDER BY sort_order, id");
-            $statement->execute(['request' => $id, 'type' => $typeId]);
+            snapshot_request_requirements($id, $typeId, 'submission');
             add_request_history($id, null, 'draft', 'Draft created.', (int) $user['id']);
         }
         $pdo->commit();
@@ -99,8 +105,12 @@ function transition_request(array $user, int $id, string $next, string $remarks,
             throw new DomainException('Provide remarks explaining this action.');
         }
         if (in_array($next, ['submitted','resubmitted','approved','completed'], true)) {
-            check_request_submission($request, request_requirements($id), in_array($next, ['approved','completed'], true));
+            check_request_submission($request, request_requirements($id, 'submission'), in_array($next, ['approved','completed'], true));
         }
+        if (in_array($next, ['in_progress','post_travel','completed'], true)) {
+            require_monitoring_complete($request, 'pre_departure');
+        }
+        if ($next === 'completed') { require_monitoring_complete($request, 'post_travel'); }
         if ($next === 'submitted') {
             // The locked AUTO_INCREMENT primary key provides a durable unique sequence.
             $request['reference_no'] = 'ELIA-' . date('Y') . '-' . str_pad((string) $id, 6, '0', STR_PAD_LEFT);

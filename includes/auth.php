@@ -8,13 +8,14 @@ function current_user(): ?array
     if (!$loaded) {
         $loaded = true;
         if (isset($_SESSION['user_id'])) {
-            $statement = database()->prepare('SELECT id, full_name, email, role, is_active FROM users WHERE id = :id');
+            $statement = database()->prepare('SELECT id, full_name, email, role, is_active, auth_version FROM users WHERE id = :id');
             $statement->execute(['id' => $_SESSION['user_id']]);
             $record = $statement->fetch();
-            if ($record && $record['is_active'] && in_array($record['role'], ['admin', 'client'], true)) {
+            if ($record && $record['is_active'] && in_array($record['role'], ['admin', 'client'], true)
+                && isset($_SESSION['auth_version']) && (int) $_SESSION['auth_version'] === (int) $record['auth_version']) {
                 $user = $record;
             } else {
-                unset($_SESSION['user_id']);
+                unset($_SESSION['user_id'], $_SESSION['auth_version']);
             }
         }
     }
@@ -93,6 +94,6 @@ function attempt_login(string $email, string $password): bool
         throw $exception;
     }
     session_regenerate_id(true);
-    $_SESSION = ['user_id' => (int) $user['id'], 'last_activity' => time()];
+    $_SESSION = ['user_id' => (int) $user['id'], 'auth_version' => (int) $user['auth_version'], 'last_activity' => time()];
     return true;
 }

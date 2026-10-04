@@ -8,9 +8,25 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/functions.php';
 
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+set_exception_handler(function (Throwable $exception): void {
+    error_log((string) $exception);
+    if (PHP_SAPI === 'cli') {
+        fwrite(STDERR, "The operation failed. Check the PHP error log.\n");
+        exit(1);
+    }
+    http_response_code(500);
+    echo 'The service is temporarily unavailable. Please try again later.';
+});
+if (PHP_SAPI !== 'cli') {
+    header('Cache-Control: no-store');
+    header('X-Content-Type-Options: nosniff');
+}
+
 /* ---------- Session ---------- */
 
-if (session_status() === PHP_SESSION_NONE) {
+if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE) {
     $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
     $cookiePath = rtrim((string) (app_config()['base_path'] ?? ''), '/') . '/';
 

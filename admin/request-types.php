@@ -9,14 +9,14 @@ $selected = null;
 foreach ($types as $type) { if ((int) $type['id'] === $typeId) { $selected = $type; } }
 $templates = [];
 if ($selected) {
-    $statement = database()->prepare('SELECT * FROM requirement_templates WHERE request_type_id=:id ORDER BY sort_order, id');
+    $statement = database()->prepare('SELECT * FROM requirement_templates WHERE request_type_id=:id ORDER BY stage, sort_order, id');
     $statement->execute(['id' => $typeId]); $templates = $statement->fetchAll();
 }
 $pageTitle = 'Request types and checklists';
 require __DIR__ . '/../includes/header.php';
 ?>
 <h1 class="h3">Request types and checklists</h1>
-<p class="text-secondary">Configure the official requirements before marking a checklist ready. Changes apply to new drafts; existing requests retain their original checklist.</p>
+<p class="text-secondary">Configure submission, pre-departure, and post-travel requirements separately. Each stage must be reviewed before use. Existing initialized checklists retain their requirements when templates change.</p>
 <form method="get" class="d-flex gap-2 mb-4"><label class="visually-hidden" for="type-id">Request type</label><select id="type-id" name="id" class="form-select"><?php foreach ($types as $type): ?><option value="<?= (int) $type['id'] ?>" <?= (int) $type['id'] === $typeId ? 'selected' : '' ?>><?= escape($type['name']) ?></option><?php endforeach; ?></select><button class="btn btn-outline-primary" type="submit">Open</button></form>
 <?php if ($selected): ?>
 <form method="post" action="<?= escape(url('actions/requests/configure.php')) ?>" class="card card-body mb-4">
@@ -24,11 +24,14 @@ require __DIR__ . '/../includes/header.php';
 <h2 class="h5">Type settings</h2><label for="type-name" class="form-label">Name</label><input id="type-name" name="name" class="form-control mb-3" maxlength="150" value="<?= escape($selected['name']) ?>" required>
 <label for="type-description" class="form-label">Description</label><textarea id="type-description" name="description" class="form-control mb-3" maxlength="5000"><?= escape($selected['description']) ?></textarea>
 <label for="type-status" class="form-label">Availability</label><select id="type-status" name="status" class="form-select mb-3"><option value="active" <?= $selected['status'] === 'active' ? 'selected' : '' ?>>Active</option><option value="inactive" <?= $selected['status'] === 'inactive' ? 'selected' : '' ?>>Inactive</option></select>
-<div class="form-check mb-3"><input id="ready" name="checklist_ready" value="1" type="checkbox" class="form-check-input" <?= $selected['checklist_ready'] ? 'checked' : '' ?>><label class="form-check-label" for="ready">Checklist reviewed and ready for new client requests (including an intentionally empty checklist)</label></div><div><button class="btn btn-primary" type="submit">Save type settings</button></div></form>
-<?php $templates[] = ['id'=>0,'requirement_name'=>'','description'=>'','is_required'=>1,'sort_order'=>0,'status'=>'active']; foreach ($templates as $template): ?>
+<?php foreach (['checklist_ready'=>'Submission','pre_departure_ready'=>'Pre-departure','post_travel_ready'=>'Post-travel'] as $field=>$label): ?>
+<div class="form-check mb-3"><input id="<?= escape($field) ?>" name="<?= escape($field) ?>" value="1" type="checkbox" class="form-check-input" <?= $selected[$field] ? 'checked' : '' ?>><label class="form-check-label" for="<?= escape($field) ?>"><?= escape($label) ?> checklist reviewed and ready (including an intentionally empty checklist)</label></div>
+<?php endforeach; ?><div><button class="btn btn-primary" type="submit">Save type settings</button></div></form>
+<?php $templates[] = ['id'=>0,'requirement_name'=>'','description'=>'','is_required'=>1,'sort_order'=>0,'status'=>'active','stage'=>'submission']; foreach ($templates as $template): ?>
 <form method="post" action="<?= escape(url('actions/requests/configure.php')) ?>" class="card card-body mb-3">
 <?= csrf_field() ?><input type="hidden" name="operation" value="template"><input type="hidden" name="type_id" value="<?= $typeId ?>"><input type="hidden" name="template_id" value="<?= (int) $template['id'] ?>">
 <h2 class="h5"><?= $template['id'] ? 'Edit requirement' : 'Add requirement' ?></h2>
+<div class="mb-3"><label class="form-label" for="stage-<?= (int) $template['id'] ?>">Checklist stage</label><select class="form-select" id="stage-<?= (int) $template['id'] ?>" name="stage"><?php foreach (['submission'=>'Submission'] + monitoring_stages() as $stage=>$label): ?><option value="<?= escape($stage) ?>" <?= $template['stage'] === $stage ? 'selected' : '' ?>><?= escape($label) ?></option><?php endforeach; ?></select></div>
 <div class="row g-3"><div class="col-md-6"><label class="form-label" for="name-<?= (int) $template['id'] ?>">Requirement name</label><input class="form-control" id="name-<?= (int) $template['id'] ?>" name="name" maxlength="180" value="<?= escape($template['requirement_name']) ?>" required></div>
 <div class="col-md-3"><label class="form-label" for="sort-<?= (int) $template['id'] ?>">Sort order</label><input class="form-control" id="sort-<?= (int) $template['id'] ?>" name="sort_order" type="number" min="0" max="9999" value="<?= (int) $template['sort_order'] ?>" required></div>
 <div class="col-md-3"><label class="form-label" for="status-<?= (int) $template['id'] ?>">Status</label><select class="form-select" id="status-<?= (int) $template['id'] ?>" name="status"><option value="active" <?= $template['status'] === 'active' ? 'selected' : '' ?>>Active</option><option value="inactive" <?= $template['status'] === 'inactive' ? 'selected' : '' ?>>Inactive</option></select></div>

@@ -78,7 +78,7 @@ function verify_csrf(): void
     $real = $_SESSION['csrf_token'] ?? '';
 
     if ($sent === '' || !is_string($real) || $real === '' || !hash_equals($real, $sent)) {
-        http_response_code(419);
+        http_response_code(403);
         exit('Invalid or expired form token. Go back, refresh the page and try again.');
     }
 }

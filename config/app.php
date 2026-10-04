@@ -18,6 +18,11 @@ return array_replace([
 
     // Routing
     'base_path' => '',
+    // Trusted absolute application URL, including base path; never derived from Host headers.
+    'app_url' => getenv('ELIA_APP_URL') ?: '',
+    // Configure PHP mail()/sendmail (or its SMTP relay) before enabling delivery.
+    'recovery_mail_enabled' => false,
+    'mail_from' => getenv('ELIA_MAIL_FROM') ?: '',
 
     // Database
     'db_host' => getenv('ELIA_DB_HOST') ?: '127.0.0.1',
@@ -27,6 +32,7 @@ return array_replace([
     'db_password' => getenv('ELIA_DB_PASSWORD') ?: '',
 
     // Sessions and uploads
+    'timezone' => 'Asia/Manila',
     'session_idle_seconds' => 1800,
     'document_storage' => dirname(__DIR__) . '/uploads',
     'document_max_bytes' => 10 * 1024 * 1024,

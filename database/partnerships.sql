@@ -1,0 +1,61 @@
+CREATE TABLE partners (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(200) NOT NULL,
+ country VARCHAR(100) NOT NULL,
+ address VARCHAR(500) NOT NULL DEFAULT '',
+ contact_name VARCHAR(150) NOT NULL DEFAULT '',
+ contact_email VARCHAR(254) NOT NULL DEFAULT '',
+ website VARCHAR(500) NOT NULL DEFAULT '',
+ notes TEXT NOT NULL,
+ is_archived TINYINT(1) NOT NULL DEFAULT 0,
+ revision INT UNSIGNED NOT NULL DEFAULT 1,
+ created_by BIGINT UNSIGNED NOT NULL,
+ updated_by BIGINT UNSIGNED NOT NULL,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ UNIQUE KEY partner_name_country (name, country),
+ FOREIGN KEY (created_by) REFERENCES users(id),
+ FOREIGN KEY (updated_by) REFERENCES users(id),
+ CHECK (is_archived IN (0,1))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE partnership_agreements (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ partner_id BIGINT UNSIGNED NOT NULL,
+ reference_no VARCHAR(100) NOT NULL UNIQUE,
+ title VARCHAR(200) NOT NULL,
+ agreement_type ENUM('MOU','MOA') NOT NULL,
+ status ENUM('draft','signed','terminated') NOT NULL DEFAULT 'draft',
+ signed_date DATE NULL,
+ start_date DATE NULL,
+ end_date DATE NULL,
+ notes TEXT NOT NULL,
+ is_archived TINYINT(1) NOT NULL DEFAULT 0,
+ revision INT UNSIGNED NOT NULL DEFAULT 1,
+ created_by BIGINT UNSIGNED NOT NULL,
+ updated_by BIGINT UNSIGNED NOT NULL,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ FOREIGN KEY (partner_id) REFERENCES partners(id),
+ FOREIGN KEY (created_by) REFERENCES users(id),
+ FOREIGN KEY (updated_by) REFERENCES users(id),
+ KEY agreement_dates (status, end_date),
+ CHECK (is_archived IN (0,1)),
+ CHECK (end_date IS NULL OR (start_date IS NOT NULL AND end_date >= start_date))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE partnership_documents (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ agreement_id BIGINT UNSIGNED NOT NULL,
+ version INT UNSIGNED NOT NULL,
+ description VARCHAR(200) NOT NULL,
+ original_filename VARCHAR(255) NOT NULL,
+ stored_filename VARCHAR(80) CHARACTER SET ascii COLLATE ascii_bin NOT NULL UNIQUE,
+ mime_type VARCHAR(150) NOT NULL,
+ file_size BIGINT UNSIGNED NOT NULL,
+ uploaded_by BIGINT UNSIGNED NOT NULL,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ UNIQUE KEY agreement_upload_version (agreement_id, version),
+ FOREIGN KEY (agreement_id) REFERENCES partnership_agreements(id),
+ FOREIGN KEY (uploaded_by) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -61,18 +61,18 @@ function request_types(bool $activeOnly = true): array
     return database()->query('SELECT * FROM request_types' . ($activeOnly ? " WHERE status = 'active'" : '') . ' ORDER BY id')->fetchAll();
 }
 
-function request_templates(int $typeId): array
+function request_templates(int $typeId, string $stage = 'submission'): array
 {
-    $statement = database()->prepare("SELECT * FROM requirement_templates WHERE request_type_id = :type AND status = 'active' ORDER BY sort_order, id");
-    $statement->execute(['type' => $typeId]);
+    $statement = database()->prepare("SELECT * FROM requirement_templates WHERE request_type_id = :type AND stage=:stage AND status = 'active' ORDER BY sort_order, id");
+    $statement->execute(['type' => $typeId, 'stage' => $stage]);
     return $statement->fetchAll();
 }
 
 // Call only after loading an authorized request_record in the same request.
-function request_requirements(int $id): array
+function request_requirements(int $id, ?string $stage = null): array
 {
-    $statement = database()->prepare('SELECT q.*, d.id AS document_id, d.version, d.original_filename, d.stored_filename, d.status AS document_status, d.admin_remarks, d.uploaded_at FROM request_requirements q LEFT JOIN request_documents d ON d.request_requirement_id = q.id AND d.version = (SELECT MAX(v.version) FROM request_documents v WHERE v.request_requirement_id = q.id) WHERE q.request_id = :id ORDER BY q.sort_order, q.id');
-    $statement->execute(['id' => $id]);
+    $statement = database()->prepare('SELECT q.*, d.id AS document_id, d.version, d.original_filename, d.stored_filename, d.status AS document_status, d.admin_remarks, d.uploaded_at FROM request_requirements q LEFT JOIN request_documents d ON d.request_requirement_id = q.id AND d.version = (SELECT MAX(v.version) FROM request_documents v WHERE v.request_requirement_id = q.id) WHERE q.request_id = :id' . ($stage !== null ? ' AND q.stage=:stage' : '') . ' ORDER BY q.stage, q.sort_order, q.id');
+    $statement->execute($stage !== null ? ['id' => $id, 'stage' => $stage] : ['id' => $id]);
     return $statement->fetchAll();
 }
 
@@ -85,7 +85,7 @@ function request_history(int $id): array
 
 function request_versions(int $id): array
 {
-    $statement = database()->prepare('SELECT d.*, q.requirement_name, u.full_name AS reviewer FROM request_documents d JOIN request_requirements q ON q.id = d.request_requirement_id LEFT JOIN users u ON u.id = d.verified_by WHERE d.request_id = :id ORDER BY q.sort_order, q.id, d.version DESC');
+    $statement = database()->prepare('SELECT d.*, q.requirement_name, q.stage, u.full_name AS reviewer FROM request_documents d JOIN request_requirements q ON q.id = d.request_requirement_id LEFT JOIN users u ON u.id = d.verified_by WHERE d.request_id = :id ORDER BY q.stage, q.sort_order, q.id, d.version DESC');
     $statement->execute(['id' => $id]);
     return $statement->fetchAll();
 }
