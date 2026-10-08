@@ -6,11 +6,15 @@
             <?php if ($layoutUser['role'] === 'admin'): ?>
             <a class="nav-link <?= ($pageTitle ?? '') === 'Partnerships' ? 'dashboard-link' : '' ?> rounded px-3 py-2" href="<?= escape(url('admin/partnerships/index.php')) ?>">Partnerships &amp; agreements</a>
             <a class="nav-link <?= ($pageTitle ?? '') === 'User management' ? 'dashboard-link' : '' ?> rounded px-3 py-2" href="<?= escape(url('admin/users/index.php')) ?>">User management</a>
+            <a class="nav-link <?= ($pageTitle ?? '') === 'Reports' ? 'dashboard-link' : '' ?> rounded px-3 py-2" href="<?= escape(url('admin/reports/index.php')) ?>">Reports</a>
+            <a class="nav-link <?= ($pageTitle ?? '') === 'Announcements' ? 'dashboard-link' : '' ?> rounded px-3 py-2" href="<?= escape(url('admin/announcements/index.php')) ?>">Announcements</a>
+            <a class="nav-link <?= ($pageTitle ?? '') === 'Resources' ? 'dashboard-link' : '' ?> rounded px-3 py-2" href="<?= escape(url('admin/resources/index.php')) ?>">Resources &amp; forms</a>
             <?php endif; ?>
             <a class="nav-link <?= ($pageTitle ?? '') === 'Dashboard' ? 'dashboard-link' : '' ?> rounded px-3 py-2" <?= ($pageTitle ?? '') === 'Dashboard' ? 'aria-current="page"' : '' ?> href="<?= escape(url(dashboard_path($layoutUser['role']))) ?>">Dashboard</a>
             <a class="nav-link px-3 py-2" href="<?= escape(url($layoutUser['role'] . '/requests/index.php')) ?>"><?= $layoutUser['role'] === 'admin' ? 'Request management' : 'My requests' ?></a>
             <a class="nav-link <?= ($pageTitle ?? '') === 'Travel monitoring' ? 'dashboard-link' : '' ?> rounded px-3 py-2" href="<?= escape(url($layoutUser['role'] . '/monitoring.php')) ?>">Travel monitoring</a>
             <?php if ($layoutUser['role'] === 'client'): ?><a class="nav-link px-3 py-2" href="<?= escape(url('client/requests/create.php')) ?>">Create request</a><?php else: ?><a class="nav-link px-3 py-2" href="<?= escape(url('admin/request-types.php')) ?>">Request types &amp; checklists</a><?php endif; ?>
+            <?php if ($layoutUser['role'] === 'client'): ?><a class="nav-link <?= ($pageTitle ?? '') === 'ELIA information' ? 'dashboard-link' : '' ?> rounded px-3 py-2" href="<?= escape(url('client/information.php')) ?>">ELIA information</a><?php endif; ?>
             <?php require_once __DIR__ . '/notifications.php'; $unread = unread_notifications((int) $layoutUser['id']); ?>
             <a class="nav-link px-3 py-2" href="<?= escape(url('notifications.php')) ?>">Notifications <?php if ($unread): ?><span class="badge text-bg-primary"><?= $unread ?><span class="visually-hidden"> unread</span></span><?php endif; ?></a>
         </nav>

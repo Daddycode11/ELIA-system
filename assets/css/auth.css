@@ -1,0 +1,85 @@
+/* ELIA auth pages (login / register) — matches the landing page */
+:root{--navy:#0B2545;--navy-deep:#071A33;--navy-soft:#16365F;--gold:#C99A2E;--gold-soft:#E9D8A6;--paper:#F7F6F2;--ink:#17202B;--muted:#546071;--line:#E3E1D9}
+html{scroll-behavior:smooth}
+body.el-body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+.el-body h1,.el-body h2{font-family:'Source Serif 4',Georgia,serif;color:var(--navy);letter-spacing:-.01em}
+.el-body a{color:var(--navy-soft)}
+.el-body :focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:4px}
+.el-skip{position:absolute;left:1rem;top:-4rem;background:var(--navy-deep);color:#fff !important;padding:.6rem 1rem;z-index:2000;border-radius:0 0 6px 6px}
+.el-skip:focus{top:0}
+.el-wrap{width:100%;max-width:1180px;margin:0 auto;padding:0 1.25rem}
+
+/* Header */
+.el-header{background:#fff;border-bottom:1px solid var(--line)}
+.el-header .el-wrap{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:4.5rem}
+.el-brand{display:flex;align-items:center;gap:.8rem;text-decoration:none}
+.el-brand img{height:48px;width:48px;object-fit:contain}
+.el-brand-text{line-height:1.2}
+.el-brand-text strong{display:block;color:var(--navy);font-size:1.05rem}
+.el-brand-text span{display:block;color:var(--muted);font-size:.8rem}
+.el-nav{display:flex;align-items:center;gap:.25rem}
+.el-nav a{color:var(--navy);text-decoration:none;font-weight:500;font-size:.93rem;padding:.5rem .75rem;border-radius:6px}
+.el-nav a:hover{background:var(--paper)}
+.el-nav a.el-btn{color:#fff}
+.el-btn{display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:.95rem;padding:.7rem 1.35rem;border-radius:8px;border:1px solid transparent;text-decoration:none;cursor:pointer;transition:background-color .15s}
+.el-btn-navy{background:var(--navy);color:#fff !important}
+.el-btn-navy:hover{background:var(--navy-soft)}
+.el-btn-gold{background:var(--gold);color:var(--navy-deep) !important}
+.el-btn-gold:hover{background:#d9ab3f}
+.el-btn-block{width:100%;padding:.9rem 1.4rem;font-size:1rem}
+
+/* Stage: photo panel + form */
+.au-stage{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.au-side{position:relative;isolation:isolate;color:#fff;display:flex;align-items:center;padding:clamp(2.5rem,6vw,5rem) clamp(1.5rem,5vw,4.5rem);overflow:hidden}
+.au-side img.au-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;z-index:-2}
+.au-side::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(160deg,rgba(7,26,51,.95) 0%,rgba(7,26,51,.84) 55%,rgba(11,37,69,.7) 100%)}
+.au-kicker{display:inline-flex;align-items:center;gap:.6rem;font-size:.95rem;color:var(--gold-soft);margin-bottom:1rem}
+.au-kicker::before{content:"";width:2.2rem;height:2px;background:var(--gold)}
+.au-side h1{color:#fff;font-size:clamp(2rem,3.8vw,3rem);line-height:1.1;max-width:16ch;margin:0 0 1rem}
+.au-side p.au-lede{font-size:1.08rem;color:#DCE4EF;max-width:42ch;margin-bottom:2rem}
+/* the memorable bit: a request-tracker style checklist */
+.au-steps{list-style:none;margin:0;padding:0;max-width:30rem;opacity:0;animation:au-rise .7s .15s both cubic-bezier(.2,.7,.2,1)}
+.au-steps li{position:relative;display:flex;gap:.9rem;padding:.5rem 0;color:#fff;font-size:.97rem}
+.au-steps li::before{content:"";flex:none;width:1.3rem;height:1.3rem;border-radius:50%;background:var(--gold);box-shadow:inset 0 0 0 3px var(--navy-soft);margin-top:.15rem;position:relative;z-index:1}
+.au-steps li:not(:last-child)::after{content:"";position:absolute;left:.6rem;top:1.8rem;bottom:-.45rem;width:2px;background:rgba(255,255,255,.25)}
+
+.au-main{display:flex;align-items:center;justify-content:center;padding:clamp(2rem,5vw,4rem) 1.25rem}
+.au-card{width:100%;max-width:27rem}
+.au-card h2{font-size:clamp(1.7rem,3vw,2.15rem);line-height:1.15;margin:0 0 .6rem}
+.au-rule{width:3rem;height:3px;background:var(--gold);border:0;margin:0 0 1.2rem;opacity:1}
+.au-sub{color:var(--muted);margin-bottom:1.6rem}
+.au-field{margin-bottom:1.1rem}
+.au-field label{display:block;font-weight:600;font-size:.92rem;color:var(--navy);margin-bottom:.35rem}
+.au-input{display:block;width:100%;padding:.8rem .95rem;font:inherit;color:var(--ink);background:#fff;border:1px solid #CFCCC0;border-radius:8px;transition:border-color .15s,box-shadow .15s}
+.au-input:hover{border-color:#B3AF9F}
+.au-input:focus{outline:0;border-color:var(--navy);box-shadow:0 0 0 3px rgba(201,154,46,.35)}
+.au-pw{position:relative}
+.au-pw .au-input{padding-right:4.6rem}
+.au-toggle{position:absolute;right:.35rem;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--navy-soft);font-weight:600;font-size:.85rem;padding:.4rem .65rem;border-radius:6px;cursor:pointer}
+.au-toggle:hover{background:var(--paper)}
+.au-hint{font-size:.84rem;color:var(--muted);margin-top:.35rem}
+.au-forgot{display:block;text-align:right;font-size:.88rem;margin:-.4rem 0 1.3rem}
+.au-alert{padding:.8rem 1rem;border-radius:8px;border:1px solid;border-left-width:4px;margin-bottom:1.3rem;font-size:.95rem}
+.au-alert.danger{background:#FDF1F0;border-color:#B3261E;color:#7A1912}
+.au-alert.success{background:#EEF7F0;border-color:#2E7D4F;color:#1D5233}
+.au-alert.warning{background:#FFF8E6;border-color:var(--gold);color:#6B4E0A}
+.au-alert.info{background:#EEF3F9;border-color:var(--navy-soft);color:var(--navy)}
+.au-alt{border-top:1px solid var(--line);margin-top:1.8rem;padding-top:1.3rem;font-size:.93rem;color:var(--muted)}
+.au-alt p{margin:0 0 .4rem}
+
+/* Footer */
+.el-footer{background:var(--navy-deep);color:#C4D0E0;padding:1.4rem 0;font-size:.88rem}
+.el-footer .el-wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem 2rem}
+.el-footer a{color:#C4D0E0;text-decoration:none}
+.el-footer a:hover{color:#fff;text-decoration:underline}
+
+@keyframes au-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.au-steps{animation:none;opacity:1}}
+@media (max-width:900px){
+  .au-stage{grid-template-columns:1fr}
+  .au-side{padding:2rem 1.25rem}
+  .au-side p.au-lede{margin-bottom:0}
+  .au-steps{display:none}
+  .au-side h1{max-width:none}
+}
+@media (max-width:560px){.el-brand-text span{display:none}.el-nav a.el-home{display:none}}

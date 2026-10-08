@@ -1,38 +1,52 @@
 <?php
-$isAdmin     = $user['role'] === 'admin';
-$requestsUrl = url($user['role'] . '/requests/index.php');
-$createUrl   = url('user/requests/create.php'); // ayusin sa tunay na route
+$pdo     = database();
+$user    = $user ?? current_user();   // alisin kung defined na sa taas ng file mo
+$role    = $user['role'];
+$isAdmin = $role === 'admin';
 
+$requestsUrl = url($role . '/requests/index.php');
+$createUrl   = url('client/requests/create.php');
+
+// Admin: lahat ng requests. Client: sa kanya lang.
 $where  = $isAdmin ? '' : 'WHERE user_id = :uid';
 $params = $isAdmin ? [] : ['uid' => $user['id']];
 
-// Counts per status
+/* ---------- Stats ---------- */
 $stmt = $pdo->prepare("SELECT status, COUNT(*) FROM requests $where GROUP BY status");
 $stmt->execute($params);
-$counts = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+$counts = array_map('intval', $stmt->fetchAll(PDO::FETCH_KEY_PAIR));
 
 $total     = array_sum($counts);
-$completed = (int) ($counts['completed'] ?? 0);
-$rate      = $total > 0 ? round($completed / $total * 100) : 0;
+$completed = $counts['completed'] ?? 0;
+$awaiting  = ($counts['submitted'] ?? 0) + ($counts['under_review'] ?? 0);
+$revision  = $counts['for_revision'] ?? 0;
+$rate      = $total > 0 ? (int) round($completed / $total * 100) : 0;
 
 $stats = [
-    ['Total requests', $total,                          'bi-folder2-open',    'primary'],
-    ['Pending',        (int) ($counts['pending'] ?? 0),   'bi-hourglass-split', 'warning'],
-    ['In review',      (int) ($counts['in_review'] ?? 0), 'bi-search',          'info'],
-    ['Completed',      $completed,                      'bi-check2-circle',   'success'],
+    ['Total requests',  $total,     'bi-folder2-open',    'navy'],
+    ['Awaiting review', $awaiting,  'bi-hourglass-split', 'gold'],
+    ['For revision',    $revision,  'bi-pencil-square',   'rose'],
+    ['Completed',       $completed, 'bi-check2-circle',   'green'],
 ];
 
-// Recent requests
-$stmt = $pdo->prepare("SELECT id, title, status, created_at FROM requests $where ORDER BY created_at DESC LIMIT 6");
+/* ---------- Recent requests ---------- */
+$recentWhere = $isAdmin ? "WHERE status <> 'draft'" : 'WHERE user_id = :uid';
+$stmt = $pdo->prepare(
+    "SELECT id, reference_no, title, status, COALESCE(submitted_at, created_at) AS sort_date
+     FROM requests $recentWhere
+     ORDER BY sort_date DESC
+     LIMIT 6"
+);
 $stmt->execute($params);
-$recent = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$recent = $stmt->fetchAll();
 
 $statusMap = [
-    'pending'   => ['warning',   'Pending'],
-    'in_review' => ['info',      'In review'],
-    'approved'  => ['primary',   'Approved'],
-    'completed' => ['success',   'Completed'],
-    'rejected'  => ['danger',    'Rejected'],
+    'draft'        => ['secondary', 'Draft'],
+    'submitted'    => ['warning',   'Submitted'],
+    'under_review' => ['info',      'Under review'],
+    'for_revision' => ['danger',    'For revision'],
+    'approved'     => ['primary',   'Approved'],
+    'completed'    => ['success',   'Completed'],
 ];
 
 $steps = $isAdmin
@@ -43,13 +57,15 @@ $steps = $isAdmin
 <!-- Hero -->
 <section class="dash-hero mb-4">
     <div>
-        <p class="eyebrow mb-1"><?= escape(ucfirst($user['role'])) ?> dashboard</p>
+        <p class="dash-eyebrow mb-1"><?= escape(ucfirst($role)) ?> dashboard</p>
         <h1 class="h3 mb-1">Welcome back, <?= escape($user['full_name']) ?></h1>
         <p class="mb-0 opacity-75">OMSC Internationalization Affairs workspace</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
         <?php if (!$isAdmin): ?>
-            <a class="btn btn-light" href="<?= escape($createUrl) ?>"><i class="bi bi-plus-lg me-1"></i>New request</a>
+            <a class="btn btn-warning fw-semibold" href="<?= escape($createUrl) ?>">
+                <i class="bi bi-plus-lg me-1"></i>New request
+            </a>
         <?php endif; ?>
         <a class="btn btn-outline-light" href="<?= escape($requestsUrl) ?>">
             <?= $isAdmin ? 'Review requests' : 'My requests' ?>
@@ -59,17 +75,15 @@ $steps = $isAdmin
 
 <!-- Stats -->
 <div class="row g-3 mb-4">
-    <?php foreach ($stats as [$label, $value, $icon, $color]): ?>
+    <?php foreach ($stats as [$label, $value, $icon, $tone]): ?>
         <div class="col-6 col-xl-3">
-            <div class="card stat-card accent-<?= $color ?> h-100">
+            <div class="card dash-card stat-card tone-<?= $tone ?> h-100">
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-secondary small text-uppercase fw-semibold"><?= escape($label) ?></div>
-                        <div class="stat-value"><?= $value ?></div>
+                        <div class="stat-value"><?= (int) $value ?></div>
                     </div>
-                    <div class="stat-icon bg-<?= $color ?>-subtle text-<?= $color ?>-emphasis">
-                        <i class="bi <?= $icon ?>"></i>
-                    </div>
+                    <div class="stat-icon"><i class="bi <?= $icon ?>"></i></div>
                 </div>
             </div>
         </div>
@@ -79,10 +93,12 @@ $steps = $isAdmin
 <div class="row g-4">
     <!-- Recent requests -->
     <div class="col-lg-8">
-        <section class="card panel h-100" aria-labelledby="recent-heading">
-            <div class="panel-head">
+        <section class="card dash-card h-100" aria-labelledby="recent-heading">
+            <div class="dash-panel-head">
                 <h2 class="h6 mb-0" id="recent-heading">Recent requests</h2>
-                <a class="small text-decoration-none" href="<?= escape($requestsUrl) ?>">View all <i class="bi bi-arrow-right"></i></a>
+                <a class="small text-decoration-none" href="<?= escape($requestsUrl) ?>">
+                    View all <i class="bi bi-arrow-right"></i>
+                </a>
             </div>
 
             <?php if (!$recent): ?>
@@ -103,20 +119,24 @@ $steps = $isAdmin
                             <tr>
                                 <th class="ps-4">Request</th>
                                 <th>Status</th>
-                                <th>Submitted</th>
-                                <th class="pe-4"></th>
+                                <th>Date</th>
+                                <th class="pe-4"><span class="visually-hidden">Action</span></th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($recent as $r):
-                                [$color, $text] = $statusMap[$r['status']] ?? ['secondary', ucfirst($r['status'])]; ?>
+                                [$color, $text] = $statusMap[$r['status']]
+                                    ?? ['secondary', ucwords(str_replace('_', ' ', (string) $r['status']))]; ?>
                                 <tr>
-                                    <td class="ps-4 fw-medium"><?= escape($r['title']) ?></td>
+                                    <td class="ps-4">
+                                        <div class="fw-medium"><?= escape($r['title']) ?></div>
+                                        <div class="text-secondary small"><?= escape($r['reference_no'] ?? 'Draft') ?></div>
+                                    </td>
                                     <td><span class="badge rounded-pill text-bg-<?= $color ?>"><?= escape($text) ?></span></td>
-                                    <td class="text-secondary small"><?= escape(date('M j, Y', strtotime($r['created_at']))) ?></td>
+                                    <td class="text-secondary small"><?= escape(date('M j, Y', strtotime((string) $r['sort_date']))) ?></td>
                                     <td class="pe-4 text-end">
                                         <a class="btn btn-sm btn-outline-primary"
-                                           href="<?= escape(url($user['role'] . '/requests/view.php?id=' . (int) $r['id'])) ?>">Open</a>
+                                           href="<?= escape(url($role . '/requests/view.php?id=' . (int) $r['id'])) ?>">Open</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -129,20 +149,21 @@ $steps = $isAdmin
 
     <!-- Side column -->
     <div class="col-lg-4 d-flex flex-column gap-4">
-        <section class="card panel" aria-labelledby="progress-heading">
+        <section class="card dash-card" aria-labelledby="progress-heading">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h2 class="h6 mb-0" id="progress-heading">Completion rate</h2>
                     <span class="fw-bold"><?= $rate ?>%</span>
                 </div>
-                <div class="progress" role="progressbar" aria-valuenow="<?= $rate ?>" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress" role="progressbar" aria-label="Completion rate"
+                     aria-valuenow="<?= $rate ?>" aria-valuemin="0" aria-valuemax="100">
                     <div class="progress-bar bg-success" style="width: <?= $rate ?>%"></div>
                 </div>
                 <p class="text-secondary small mt-2 mb-0"><?= $completed ?> of <?= $total ?> requests completed</p>
             </div>
         </section>
 
-        <section class="card panel flex-fill" aria-labelledby="guide-heading">
+        <section class="card dash-card flex-fill" aria-labelledby="guide-heading">
             <div class="card-body p-4">
                 <span class="badge text-bg-success mb-3">Account active</span>
                 <h2 class="h6" id="guide-heading"><?= $isAdmin ? 'Review workflow' : 'How it works' ?></h2>
@@ -160,26 +181,28 @@ $steps = $isAdmin
 </div>
 
 <style>
+:root { --elia-navy: #0a1f44; --elia-navy-2: #14366e; --elia-gold: #c9a227; }
+
 .dash-hero {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
   padding: 1.75rem 2rem; border-radius: 1rem; color: #fff;
-  background: linear-gradient(135deg, var(--bs-primary) 0%, #0b3d2e 100%);
+  background: linear-gradient(135deg, var(--elia-navy) 0%, var(--elia-navy-2) 100%);
+  border-bottom: 4px solid var(--elia-gold);
 }
-.dash-hero .eyebrow { color: rgba(255,255,255,.7); }
-.eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; font-weight: 600; }
+.dash-eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; font-weight: 600; color: var(--elia-gold); }
 
-.card.stat-card, .card.panel { border: 1px solid var(--bs-border-color-translucent); border-radius: .875rem; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
-.stat-card { border-left: 4px solid var(--accent) !important; transition: transform .15s, box-shadow .15s; }
+.dash-card { border: 1px solid var(--bs-border-color-translucent); border-radius: .875rem; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.stat-card { border-left: 4px solid var(--tone); transition: transform .15s, box-shadow .15s; }
 .stat-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.08); }
-.accent-primary { --accent: var(--bs-primary); }
-.accent-warning { --accent: var(--bs-warning); }
-.accent-info    { --accent: var(--bs-info); }
-.accent-success { --accent: var(--bs-success); }
+.tone-navy  { --tone: var(--elia-navy);  --tone-bg: #e3e9f5; }
+.tone-gold  { --tone: var(--elia-gold);  --tone-bg: #fbf3d6; }
+.tone-rose  { --tone: #c0392b;           --tone-bg: #fbe4e1; }
+.tone-green { --tone: #198754;           --tone-bg: #d9f0e3; }
 .stat-value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
-.stat-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 12px; font-size: 1.3rem; }
+.stat-icon  { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 12px; font-size: 1.3rem; background: var(--tone-bg); color: var(--tone); }
 
-.panel-head { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--bs-border-color-translucent); }
-.panel .table thead th { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--bs-secondary-color); background: var(--bs-tertiary-bg); border-bottom: 0; }
+.dash-panel-head { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--bs-border-color-translucent); }
+.dash-card .table thead th { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--bs-secondary-color); background: var(--bs-tertiary-bg); border-bottom: 0; }
 .progress { height: .6rem; border-radius: 1rem; }
-.step-num { flex: 0 0 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; font-size: .8rem; font-weight: 600; background: var(--bs-primary-bg-subtle); color: var(--bs-primary-text-emphasis); }
+.step-num { flex: 0 0 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; font-size: .8rem; font-weight: 600; background: #e3e9f5; color: var(--elia-navy); }
 </style>
