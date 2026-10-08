@@ -2,13 +2,25 @@
 declare(strict_types=1);
 require __DIR__ . '/../../includes/bootstrap.php';
 require_once __DIR__ . '/../../includes/announcements.php';
-$user = requireAdmin(); require_post(); verify_csrf();
+require_once __DIR__ . '/_common.php';
+
+$user = announcement_admin();
+require_post();
+verify_csrf();
+
 try {
     $id = announcement_id(post_string('id'), true) ?: null;
     $revision = announcement_id(post_string('revision'), true);
-} catch (DomainException $exception) { http_response_code(400); exit('Invalid record parameters.'); }
+} catch (DomainException $exception) {
+    http_response_code(400);
+    exit('Invalid record parameters.');
+}
+
 $input = [];
-foreach (['title', 'summary', 'body', 'category', 'status'] as $key) { $input[$key] = post_string($key); }
+foreach (['title', 'summary', 'body', 'category', 'status'] as $key) {
+    $input[$key] = post_string($key);
+}
+
 try {
     $savedId = announcement_save($id, $revision, $input, (int) $user['id']);
     flash('success', 'Announcement saved.');
